@@ -1,5 +1,5 @@
 #include "HashFunctions.h"
-
+#include <iomanip>
 //-----------------Деструктор----------------//
 HashTable::~HashTable()
 {
@@ -9,11 +9,8 @@ HashTable::~HashTable()
 //-------------------------------------------//
 
 //------------------------Добавление-----------------------//
-void HashTable::addNode(const int key, const int value)
+void HashTable::addNode(int key,int value) 
 {
-  if(m_size == m_capacity)
-    resize(m_capacity+1);
-  // вычислим хэш
   int hash = m_hashFunction->getHash(key, m_capacity);
   //создадим нашу новую ноду
   Node* addNode = new Node(key, value);
@@ -69,43 +66,47 @@ HashTable::Node *HashTable::isHasNode(int key) const
   }
   return nullptr;
 }
+
+bool HashTable::boolIsHasNode(int key)
+{
+  if(isHasNode(key) == nullptr)
+    return false;
+  return true;
+}
 //-----------------------------------------------------------------------//
+
 
 //----------------------------Вывод в консоль--------------------------//
 void HashTable::printTable() const 
 {
-  std::cout << "Hash" << '\t' << "Key, Val"<< std::endl;
-  for (int i = 0; i < m_capacity; i++) 
-  {
-    std::cout << "Hash " << i <<'\t';
-    if (m_nodes[i] != nullptr) 
-      std::cout << m_nodes[i]->GetKey() << ", " << m_nodes[i]->GetValue();
-    std::cout << std::endl;
-  }
-  std::cout << std::endl;
+   std::cout << "Hash" << std::setw(18) << "(Key, Value)" << std::setw(26) << "(_table[i], _next)" << std::endl;
+        for (int i = 0; i < m_capacity; i++) {
+            std::cout << "Hash " << i << ":" << std::setw(4);
+            Node* current = m_nodes[i];
+            if (current != nullptr) { // while (current != nullptr)
+                std::cout << std::setw(4) << "(" << current->GetKey() << ", " << current->GetValue() << ")";
+                std::cout << std::setw(9) << "(" << current << ", " << current->GetNextNode() << ") ";
+                //current = current->_next;
+            }
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
 }
 //---------------------------------------------------------------------//
 
 //------------------------Удаление таблицы-------------------------//
 void HashTable::clear() 
 {
-
   for (int i = 0; i < m_capacity; i++) 
   {
-    Node* temp = m_nodes[i];
-    //удалим всех потомков этой ноды
-    while (temp != nullptr) 
-    {
-      Node* deleteTemp = temp;
-      temp = temp->GetNextNode();
-      if (temp != nullptr)
-        delete deleteTemp;
-    }
+    delete m_nodes[i];
     m_nodes[i] = nullptr;
   }
   m_size = 0;
 }
 //-----------------------------------------------------------------//
+
+
 
 //---------------------------Копирование------------------------------//
 void HashTable::copyTable(const HashTable& copy) 
@@ -135,21 +136,23 @@ void HashTable::copyTable(const HashTable& copy)
 }
 //---------------------------------------------------------------------//
 
+
 //----------------Оператор присваивания--------------//
 HashTable& HashTable::operator=(const HashTable& copy) 
 {
 
-  if(this!=&copy)
-  {
-    clear();
-    delete m_hashFunction;
-    SetHashFunction(copy.m_hashFunction);
-    m_nodes.resize(copy.m_capacity,nullptr);
-    copyTable(copy);
-  }
+  if(this==&copy)
+    return *this;
+  delete m_hashFunction;
+  clear();
+  m_nodes.resize(copy.m_capacity,nullptr);
+  copyTable(copy);
+  m_hashFunction = copy.m_hashFunction->clone();
   return *this;
 }
 //---------------------------------------------------//
+
+
 //-------------------Замена хэш функции------------------//
 void HashTable::rehash(HashFunction *hashFunction) 
 {
@@ -158,6 +161,7 @@ void HashTable::rehash(HashFunction *hashFunction)
   resize(m_capacity);//нам нужно заново создать таблицу (тк поменялся хэш,но размер оставить тем же)
 }
 //-------------------------------------------------------//
+
 
 //------------------Пересоздание таблицы--------------------//
 void HashTable::resize(int newSize)
@@ -179,12 +183,6 @@ void HashTable::resize(int newSize)
   clear();
   m_nodes.resize(m_capacity,nullptr);
 
-//остортируем по возрастаниб
-std::sort(prev.begin(),prev.end(),[](Node* left, Node* right)
-      {
-        return left->GetKey() < right->GetKey();
-    });
-
   for(int i = 0;i<prev.size();i++)
     {
       addNode(prev[i]->GetKey(),prev[i]->GetValue());
@@ -192,6 +190,7 @@ std::sort(prev.begin(),prev.end(),[](Node* left, Node* right)
   prev.clear();
 }
 //-----------------------------------------------------------//
+
 
 //-------------Получение ссылки----------------//
 int& HashTable::operator[](int key)
@@ -202,3 +201,47 @@ int& HashTable::operator[](int key)
   return temp->GetAdressValue();
 }
 //---------------------------------------------//
+
+//------------------------------Удаление--------------------------//
+void HashTable::removeNode(int key) 
+{
+  if(!boolIsHasNode(key))
+    return;
+  else
+  {
+    int hash = m_hashFunction->getHash(key, m_capacity);
+    Node* temp = m_nodes[hash];
+    Node* parent = nullptr;
+    while (temp != nullptr) 
+    {
+      if (temp->GetKey() == key) 
+      {
+        // если у удаляемого узла есть потомки,то их нужно все сдвинуть по позициям
+        Node* child = temp->GetNextNode();
+        int childPosition;
+        while (child != nullptr) 
+        {
+          int childPosition = findPosition(child);
+          m_nodes[findPosition(temp)] = child;
+          child = child->GetNextNode();
+        }
+
+        //ставим потомка на это место
+        m_nodes[findPosition(temp)] = m_nodes[findPosition(temp)]->GetNextNode();
+        if(temp->GetNextNode()!= nullptr)
+          m_nodes[childPosition] = m_nodes[childPosition]->GetNextNode();
+
+        //если у удалямеого узла кроме потомков есть родитель, то теперь он отцом а не дедом
+        if(parent != nullptr)
+            parent->SetNextNode(temp->GetNextNode());
+        
+        delete temp;
+        return;
+      }
+      //если не совпадает с ключом то "сдвигаем ноды по хэшу"
+      parent = temp;
+      temp = temp->GetNextNode();
+    }
+  }
+}
+//----------------------------------------------------------------//
