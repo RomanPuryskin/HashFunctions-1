@@ -23,9 +23,15 @@ int main()
   table.removeNode(1);
   table.printTable();*/
 
-  TestHashTable tester;
+  HashTable table(6);
+  table.addNode(3,3);
+  table.addNode(4,4);
+  table.resize(7);
+  table.printTable();
+
+/*  TestHashTable tester;
 
     for (int size = 10; size < 200; size += 10)
-        tester.test(size);
+        tester.test(size);*/
   return 0;
 }

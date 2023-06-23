@@ -99,15 +99,7 @@ public:
   }
 
   ~HashTable();
-  int GetSize() { return m_size; }
-  void SetSize(int newSize) { m_size = newSize; }
-  int GetCapacity() { return m_capacity; }
-  void SetCapacity(int newCapacity) { m_capacity = newCapacity; }
-  std::vector<Node *> GetNodes() { return m_nodes; }
-  void SetHashFunction(HashFunction *hashFunction) {
-    m_hashFunction = hashFunction;
-  }
-
+ 
   void addNode(int key, int value);
   Node *isHasNode(int key) const;
   bool boolIsHasNode(int key);
@@ -119,15 +111,6 @@ public:
   int &operator[](int key);
   void resize(int newSize);
   void removeNode(int key);
-  Node* findParent(Node *temp)
-  {
-    for(int i=0;i<m_nodes.size();i++)
-    {
-      if (m_nodes[i]->GetNextNode() == temp)
-        return m_nodes[i];
-    }
-    return nullptr;
-  }
 private:
   std::vector<Node *> m_nodes;
   int m_size;
@@ -143,6 +126,10 @@ int findPosition(Node *temp)
       }
     return -1;
   }
-
-
+int GetSize() { return m_size; }
+void SetSize(int newSize) { m_size = newSize; }
+int GetCapacity() { return m_capacity; }
+void SetCapacity(int newCapacity) { m_capacity = newCapacity; }
+std::vector<Node *> GetNodes() { return m_nodes; }
+void SetHashFunction(HashFunction *hashFunction) { m_hashFunction = hashFunction;}
 };
