@@ -23,10 +23,19 @@ int main()
   table.removeNode(1);
   table.printTable();*/
 
-  HashTable table(6);
+  HashTable table(5);
   table.addNode(3,3);
   table.addNode(4,4);
-  table.resize(7);
+  table.addNode(1,1);
+  table.addNode(2,2);
+  table.addNode(5,5);
+  table.printTable();
+  table.resize(6);
+  table.printTable();
+  table.addNode(6,6);
+  table.printTable();
+  table.resize(10);
+ // table.resize(7);
   table.printTable();
 
 /*  TestHashTable tester;

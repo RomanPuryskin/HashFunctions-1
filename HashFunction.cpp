@@ -102,7 +102,7 @@ void HashTable::clear()
     delete m_nodes[i];
     m_nodes[i] = nullptr;
   }
-  m_size = 0;
+ // m_size = 0;
 }
 //-----------------------------------------------------------------//
 
@@ -166,27 +166,14 @@ void HashTable::rehash(HashFunction *hashFunction)
 //------------------Пересоздание таблицы--------------------//
 void HashTable::resize(int newSize)
 {
-  std::vector<Node*> prev;
-//заполним новый вектор значениями из старого(без потомков,они нам не нужны)
-  for (int i = 0; i < m_nodes.size(); i++) 
-  {
-    if(m_nodes[i]!=nullptr)
-    {
-      Node* newNode = new Node(m_nodes[i]->GetKey(), m_nodes[i]->GetValue());
-      newNode->SetNextNode(nullptr);
-      prev.push_back(newNode);
-    }
-  }
-//пересоздаем m_nodes
-  m_capacity = newSize;
-  clear();
-  m_nodes.resize(m_capacity,nullptr);
-
+  std::vector<Node*> prev = m_nodes;
+  m_nodes.clear();
+  m_nodes.resize(newSize,nullptr);
   for(int i = 0;i<prev.size();i++)
     {
       addNode(prev[i]->GetKey(),prev[i]->GetValue());
     }
-  prev.clear();
+  SetCapacity(newSize);
 }
 //-----------------------------------------------------------//
 
