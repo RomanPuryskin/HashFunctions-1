@@ -111,6 +111,9 @@ public:
   int &operator[](int key);
   void resize(int newSize);
   void removeNode(int key);
+  int GetSize() { return m_size; }
+  std::vector<Node *> GetNodes() { return m_nodes; }
+  int GetCapacity() { return m_capacity; }
 private:
   std::vector<Node *> m_nodes;
   int m_size;
@@ -126,10 +129,10 @@ int findPosition(Node *temp)
       }
     return -1;
   }
-int GetSize() { return m_size; }
+
 void SetSize(int newSize) { m_size = newSize; }
-int GetCapacity() { return m_capacity; }
+
 void SetCapacity(int newCapacity) { m_capacity = newCapacity; }
-std::vector<Node *> GetNodes() { return m_nodes; }
+
 void SetHashFunction(HashFunction *hashFunction) { m_hashFunction = hashFunction;}
 };
